@@ -1,4 +1,5 @@
 export { broadcastChannel } from './broadcast';
+export { createAuthClient } from './client';
 export { leaseLock, noLock, webLocksLock } from './cross-tab-lock';
 export { SessionLostError } from './errors';
 export { singleFlight } from './single-flight';
