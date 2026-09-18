@@ -1,0 +1,84 @@
+{
+  "name": "single-flight-auth",
+  "version": "0.0.0",
+  "description": "Single-flight access-token refresh within and across browser tabs. Fixes the \"random 401\" caused by refresh-token rotation races.",
+  "keywords": [
+    "auth",
+    "jwt",
+    "refresh-token",
+    "token-refresh",
+    "web-locks",
+    "broadcastchannel",
+    "single-flight",
+    "race-condition",
+    "fetch"
+  ],
+  "license": "MIT",
+  "author": "Ilia Muravev <ilia.muravev.dev@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ilia-muravev-dev/single-flight-auth.git"
+  },
+  "homepage": "https://github.com/ilia-muravev-dev/single-flight-auth#readme",
+  "bugs": "https://github.com/ilia-muravev-dev/single-flight-auth/issues",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./package.json": "./package.json"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@12.4.2",
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "pnpm build && playwright test",
+    "size": "size-limit",
+    "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm size",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish",
+    "prepublishOnly": "pnpm build"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.5.14",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@playwright/test": "^1.63.0",
+    "@size-limit/preset-small-lib": "^14.0.0",
+    "@types/node": "^24.13.5",
+    "@vitest/coverage-v8": "^5.0.1",
+    "happy-dom": "^20.14.5",
+    "size-limit": "^14.0.0",
+    "tsdown": "^0.23.0",
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.1"
+  }
+}
