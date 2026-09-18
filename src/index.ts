@@ -1,4 +1,8 @@
+export { broadcastChannel } from './broadcast';
+export { leaseLock, noLock, webLocksLock } from './cross-tab-lock';
 export { SessionLostError } from './errors';
+export { singleFlight } from './single-flight';
+export { isTokenSet, memoryStorage, webStorage } from './storage';
 export type {
   AuthClient,
   AuthClientOptions,
