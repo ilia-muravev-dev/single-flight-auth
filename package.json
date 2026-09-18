@@ -1,6 +1,6 @@
 {
   "name": "single-flight-auth",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Single-flight access-token refresh within and across browser tabs. Fixes the \"random 401\" caused by refresh-token rotation races.",
   "keywords": [
     "auth",
