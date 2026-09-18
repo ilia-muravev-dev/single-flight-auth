@@ -7,6 +7,13 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      # TypeScript 6 is the last JS-based compiler line tsdown's d.ts bundling is verified against.
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major']
+      # @types/node follows the Node LTS this package is tested on.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
