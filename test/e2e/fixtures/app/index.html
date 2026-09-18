@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>single-flight-auth fixture</title>
+  </head>
+  <body>
+    <pre id="log"></pre>
+    <script type="module">
+      import { createAuthClient, SessionLostError } from '/dist/index.js';
+
+      const params = new URLSearchParams(location.search);
+      const log = (line) => {
+        document.getElementById('log').textContent += `${line}\n`;
+      };
+
+      window.__events = [];
+      window.__auth = createAuthClient({
+        refresh: async ({ reason }) => {
+          log(`refresh (${reason})`);
+          const response = await fetch('/auth/refresh', { method: 'POST', credentials: 'include' });
+          if (!response.ok) throw response;
+          const { accessToken, expiresIn } = await response.json();
+          return { accessToken, expiresAt: Date.now() + expiresIn };
+        },
+        storage: params.get('storage') ?? 'localStorage',
+        lock: params.get('lock') ?? 'auto',
+        channel: params.get('channel') === 'off' ? false : 'single-flight-auth',
+        expirySkewMs: 0,
+        onSessionLost: () => {
+          window.__events.push('session-lost');
+          log('session lost');
+        },
+      });
+
+      window.__login = async () => {
+        const response = await fetch('/login', { method: 'POST', credentials: 'include' });
+        const { accessToken, expiresIn } = await response.json();
+        await window.__auth.setTokens({ accessToken, expiresAt: Date.now() + expiresIn });
+      };
+
+      window.__me = async () => {
+        try {
+          const response = await window.__auth.fetch('/api/me');
+          return response.status;
+        } catch (error) {
+          return error instanceof SessionLostError ? 'session-lost' : `error: ${error}`;
+        }
+      };
+
+      window.__ready = true;
+    </script>
+  </body>
+</html>
