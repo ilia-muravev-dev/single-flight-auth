@@ -33,9 +33,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           version-script: pnpm changeset version
           publish-script: pnpm release
-          commit-message: 'chore: release'
-          pr-title: 'chore: release'
+          commit-message: "chore: release"
+          pr-title: "chore: release"
         env:
           # Trusted publishing (OIDC) needs no token; NPM_TOKEN is the fallback.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
+          NPM_CONFIG_PROVENANCE: "true"

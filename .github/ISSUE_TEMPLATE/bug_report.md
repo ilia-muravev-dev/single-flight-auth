@@ -1,4 +1,5 @@
 ---
+
 name: Bug report
 about: Something behaves differently from the README
 labels: bug

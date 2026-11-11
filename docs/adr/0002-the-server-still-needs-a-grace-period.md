@@ -16,7 +16,7 @@ token can be presented twice:
 
 The library documents (README, "Why the server needs a grace period too") that the refresh endpoint
 should accept a just-consumed refresh token for a short window (10–60 s) and return the same
-successor tokens, and treat reuse *after* the window as theft (revoke the token family). The
+successor tokens, and treat reuse _after_ the window as theft (revoke the token family). The
 Playwright suite includes a row showing a 2 s grace period alone prevents logouts, at the price of
 one refresh per tab.
 
