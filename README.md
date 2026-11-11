@@ -105,13 +105,13 @@ const token = await auth.getAccessToken();
 access token expire and calls the API from all five at the same moment. Output of
 [`test/e2e/race.spec.ts`](./test/e2e/race.spec.ts):
 
-| Scenario | Refresh calls | Rejected by server | Tabs logged out |
-| --- | ---: | ---: | ---: |
-| no lock, no channel (the bug) | 5 | 4 | **4** |
-| Web Locks + `localStorage` | **1** | 0 | 0 |
-| `localStorage` lease fallback | 1 | 0 | 0 |
-| Web Locks + `memory` storage + channel | 2 | 0 | 0 |
-| no lock, server grace period 2 s | 5 | 0 | 0 |
+| Scenario                               | Refresh calls | Rejected by server | Tabs logged out |
+| -------------------------------------- | ------------: | -----------------: | --------------: |
+| no lock, no channel (the bug)          |             5 |                  4 |           **4** |
+| Web Locks + `localStorage`             |         **1** |                  0 |               0 |
+| `localStorage` lease fallback          |             1 |                  0 |               0 |
+| Web Locks + `memory` storage + channel |             2 |                  0 |               0 |
+| no lock, server grace period 2 s       |             5 |                  0 |               0 |
 
 The same race is also reproduced in-process in
 [`test/unit/client.test.ts`](./test/unit/client.test.ts) ("the race, in one process") against a
@@ -155,35 +155,35 @@ instead of one. Use both. See [ADR 0002](./docs/adr/0002-the-server-still-needs-
 
 ### `createAuthClient(options)`
 
-| Option | Default | What it does |
-| --- | --- | --- |
-| `refresh(context)` | required | Returns `{ accessToken, expiresAt }`. `context.previous` is the token set that triggered the refresh, `context.reason` is `'missing' \| 'expired' \| 'unauthorized' \| 'manual'`. Throw a `Response` (or `{ status }`) with 401/403 to signal a lost session. |
-| `storage` | `'memory'` | `'memory'`, `'localStorage'`, `'sessionStorage'` or a custom `TokenStorage` (sync or async). Web Storage falls back to memory when unavailable. |
-| `storageKey` | `'single-flight-auth:tokens'` | Key for the Web Storage adapters. |
-| `lock` | `'auto'` | `'auto'`, `'web-locks'`, `'lease'`, `'none'` or a custom `RefreshLock`. |
-| `lockName` | `'single-flight-auth:refresh'` | Name of the Web Lock / lease. Use one per user session if several clients coexist. |
-| `channel` | `'single-flight-auth'` | `BroadcastChannel` name, a custom `TokenChannel`, or `false`. |
-| `expirySkewMs` | `30_000` | Refresh proactively when the token expires within this window. |
-| `leaseTtlMs` | `10_000` | Lease fallback only: how long a lease may be held before it counts as abandoned. |
-| `isSessionLost(error)` | 401/403 | Classifies errors thrown by `refresh()`. |
-| `onSessionLost(error)` | — | Called once per lost session, in every tab. |
-| `fetch` | `globalThis.fetch` | Implementation used by `client.fetch`. |
-| `attachToken(request, token)` | `Authorization: Bearer` | Customise how the token travels. |
-| `retryOn401` | `true` | Refresh once and retry once when a response is 401. |
-| `now()` | `Date.now` | Clock, for tests. |
+| Option                        | Default                        | What it does                                                                                                                                                                                                                                                  |
+| ----------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `refresh(context)`            | required                       | Returns `{ accessToken, expiresAt }`. `context.previous` is the token set that triggered the refresh, `context.reason` is `'missing' \| 'expired' \| 'unauthorized' \| 'manual'`. Throw a `Response` (or `{ status }`) with 401/403 to signal a lost session. |
+| `storage`                     | `'memory'`                     | `'memory'`, `'localStorage'`, `'sessionStorage'` or a custom `TokenStorage` (sync or async). Web Storage falls back to memory when unavailable.                                                                                                               |
+| `storageKey`                  | `'single-flight-auth:tokens'`  | Key for the Web Storage adapters.                                                                                                                                                                                                                             |
+| `lock`                        | `'auto'`                       | `'auto'`, `'web-locks'`, `'lease'`, `'none'` or a custom `RefreshLock`.                                                                                                                                                                                       |
+| `lockName`                    | `'single-flight-auth:refresh'` | Name of the Web Lock / lease. Use one per user session if several clients coexist.                                                                                                                                                                            |
+| `channel`                     | `'single-flight-auth'`         | `BroadcastChannel` name, a custom `TokenChannel`, or `false`.                                                                                                                                                                                                 |
+| `expirySkewMs`                | `30_000`                       | Refresh proactively when the token expires within this window.                                                                                                                                                                                                |
+| `leaseTtlMs`                  | `10_000`                       | Lease fallback only: how long a lease may be held before it counts as abandoned.                                                                                                                                                                              |
+| `isSessionLost(error)`        | 401/403                        | Classifies errors thrown by `refresh()`.                                                                                                                                                                                                                      |
+| `onSessionLost(error)`        | —                              | Called once per lost session, in every tab.                                                                                                                                                                                                                   |
+| `fetch`                       | `globalThis.fetch`             | Implementation used by `client.fetch`.                                                                                                                                                                                                                        |
+| `attachToken(request, token)` | `Authorization: Bearer`        | Customise how the token travels.                                                                                                                                                                                                                              |
+| `retryOn401`                  | `true`                         | Refresh once and retry once when a response is 401.                                                                                                                                                                                                           |
+| `now()`                       | `Date.now`                     | Clock, for tests.                                                                                                                                                                                                                                             |
 
 ### `AuthClient`
 
-| Method | Behaviour |
-| --- | --- |
-| `getAccessToken({ forceRefresh? })` | Fresh token, refreshing first if needed. |
-| `getTokens()` | Stored token set or `null`; never refreshes. |
-| `refresh()` | Forces a refresh (still single-flight and locked). |
-| `fetch(input, init?)` | `fetch` with the token attached and the 401-retry behaviour. |
-| `setTokens(tokens)` | Store tokens obtained elsewhere (after login) and tell other tabs. |
-| `clear()` | Forget the tokens in every tab, without calling `onSessionLost`. |
-| `subscribe(listener)` | Observe token changes; returns an unsubscribe function. |
-| `dispose()` | Close the channel; the client cannot be used afterwards. |
+| Method                              | Behaviour                                                          |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `getAccessToken({ forceRefresh? })` | Fresh token, refreshing first if needed.                           |
+| `getTokens()`                       | Stored token set or `null`; never refreshes.                       |
+| `refresh()`                         | Forces a refresh (still single-flight and locked).                 |
+| `fetch(input, init?)`               | `fetch` with the token attached and the 401-retry behaviour.       |
+| `setTokens(tokens)`                 | Store tokens obtained elsewhere (after login) and tell other tabs. |
+| `clear()`                           | Forget the tokens in every tab, without calling `onSessionLost`.   |
+| `subscribe(listener)`               | Observe token changes; returns an unsubscribe function.            |
+| `dispose()`                         | Close the channel; the client cannot be used afterwards.           |
 
 `SessionLostError` (with `cause` set to the original error) is what waiting callers receive when a
 refresh is rejected.
@@ -197,7 +197,11 @@ Prefer an httpOnly cookie. If you must hold the refresh token in the client, ext
 and know that `localStorage` makes it readable by any script that runs on your origin:
 
 ```ts
-interface MyTokens { accessToken: string; expiresAt: number; refreshToken: string }
+interface MyTokens {
+  accessToken: string;
+  expiresAt: number;
+  refreshToken: string;
+}
 
 const auth = createAuthClient<MyTokens>({
   refresh: async ({ previous }) => post('/auth/refresh', { refreshToken: previous?.refreshToken }),
@@ -221,11 +225,11 @@ Design notes live in [`docs/adr`](./docs/adr).
 
 ## Browser and runtime support
 
-| Capability | Where | Without it |
-| --- | --- | --- |
-| Web Locks | Chrome 69, Firefox 96, Safari 15.4, Node 24 | `localStorage` lease (best effort) |
-| BroadcastChannel | Chrome 54, Firefox 38, Safari 15.4, Node 18 | tabs only sync through shared storage |
-| `fetch` / `Request` | everywhere modern, Node 18 | pass your own `fetch` |
+| Capability          | Where                                       | Without it                            |
+| ------------------- | ------------------------------------------- | ------------------------------------- |
+| Web Locks           | Chrome 69, Firefox 96, Safari 15.4, Node 24 | `localStorage` lease (best effort)    |
+| BroadcastChannel    | Chrome 54, Firefox 38, Safari 15.4, Node 18 | tabs only sync through shared storage |
+| `fetch` / `Request` | everywhere modern, Node 18                  | pass your own `fetch`                 |
 
 ## Development
 
