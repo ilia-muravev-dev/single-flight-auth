@@ -28,14 +28,14 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
       - name: Open the version PR or publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm changeset version
-          publish: pnpm release
-          commit: 'chore: release'
-          title: 'chore: release'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          version-script: pnpm changeset version
+          publish-script: pnpm release
+          commit-message: 'chore: release'
+          pr-title: 'chore: release'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           # Trusted publishing (OIDC) needs no token; NPM_TOKEN is the fallback.
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
